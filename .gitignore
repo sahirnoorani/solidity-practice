@@ -1,0 +1,15 @@
+node_modules
+.env.example
+.env
+coverage
+coverage.json
+typechain
+.npmignore
+.prettierignore
+.eslintignore
+.solhintignore
+package-lock.json
+
+#Hardhat files
+cache
+artifacts
