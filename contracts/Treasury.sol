@@ -10,7 +10,7 @@ contract Treasury is PUSD {
     address[] public depositorAddresses;
     ERC20[] public tokens;
 
-    function deposit(uint256 _amount, address _tokenAddress) public {
+    function deposit(uint256 _amount, address _tokenAddress) public virtual {
         ERC20 token = ERC20(_tokenAddress);
         tokens.push(token);
         require(
@@ -44,7 +44,7 @@ contract Treasury is PUSD {
     }
 
     function getBorrowingPower(address _address)
-        private
+        internal
         view
         returns (uint256)
     {
