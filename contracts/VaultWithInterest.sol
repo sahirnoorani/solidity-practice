@@ -11,9 +11,8 @@ contract VaultWithInterest is Treasury {
     /*
         Interest rate per second = 0.000000031709792 = 3.1709792e10-8
         calculated by dividing 1 by 31536000 (years in a second)
-        31536000 => 3.2e7
     */
-    uint256 private constant RATE_PER_SECOND = 3.170979e7;
+    uint256 private constant RATE_PER_SECOND = 3.1709792e7;
     uint256 private constant SCALE_RATIO = 1e15;
 
     //This will be scaled by a factor of 1e15, handle the proper amount upon withdrawal
@@ -21,11 +20,12 @@ contract VaultWithInterest is Treasury {
     mapping(address => uint256) private lastInteractionTimestamp;
 
     modifier updateInterestEarned() {
-        uint256 totalDepositsToPercision = getBorrowingPower(msg.sender) *
-            SCALE_RATIO;
-        interestEarned[msg.sender] += (
-            (totalDepositsToPercision.mul(RATE_PER_SECOND)).div(1e16)
-        ).mul((block.timestamp.sub(lastInteractionTimestamp[msg.sender])));
+        uint256 principle = getBorrowingPower(msg.sender);
+        interestEarned[msg.sender] += calculateInterestEarned(
+            principle,
+            lastInteractionTimestamp[msg.sender],
+            block.timestamp
+        );
         lastInteractionTimestamp[msg.sender] = block.timestamp;
         _;
     }
@@ -45,5 +45,19 @@ contract VaultWithInterest is Treasury {
         interestEarned[msg.sender] = interestEarned[msg.sender].sub(
             _amountScaled
         );
+    }
+
+    //Added this function to make this contract more testable for unit tests
+    //This function will return the interest earned by a factor of 1e15
+    function calculateInterestEarned(
+        uint256 _principle,
+        uint256 _startingTimestamp,
+        uint256 _endingTimestamp
+    ) public pure returns (uint256) {
+        _principle *= SCALE_RATIO;
+        return
+            ((_principle.mul(RATE_PER_SECOND)).div(1e17)).mul(
+                _endingTimestamp.sub(_startingTimestamp)
+            );
     }
 }
